@@ -4,10 +4,7 @@ import numpy as np
 import caffe
 from keras.utils.generic_utils import Progbar
 import  pandas as pd
-import cPickle as pickle
-
-def pickle_save(filepath,data):
-    pickle.dump(data, open(filepath, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
+import h5py
 
 if __name__ == '__main__':
 
@@ -55,6 +52,7 @@ if __name__ == '__main__':
         for line in f:
             list_test.append(line[:-1])
 
+
     for imagePath in fh.list_images(SOURCE_DIR):
         image_name = imagePath.split("/")[-1]
         class_name = imagePath.split("/")[-2]
@@ -83,20 +81,26 @@ if __name__ == '__main__':
             feature_data_test['class'].append(class_name)
             feature_data_test['res5c'].append(net.blobs['res5c'].data.copy())
 
-    #change datas to numpy array
-    feature_data_train['image_name'] = np.array (feature_data_train['image_name'])
-    feature_data_train['class'] = np.array(feature_data_train['class'])
-    feature_data_train['res5c'] = np.array(feature_data_train['res5c'])
 
-    feature_data_valid['image_name'] = np.array(feature_data_valid['image_name'])
-    feature_data_valid['class'] = np.array(feature_data_valid['class'])
-    feature_data_valid['res5c'] = np.array(feature_data_valid['res5c'])
+    # save datas
+    h5file_train = h5py.File("/storage/mehmet/Zero-Shot/Features/train.data", "w")
+    h5file_valid = h5py.File("/storage/mehmet/Zero-Shot/Features/valid.data", "w")
+    h5file_test = h5py.File("/storage/mehmet/Zero-Shot/Features/test.data", "w")
 
-    feature_data_test['image_name'] = np.array(feature_data_test['image_name'])
-    feature_data_test['class'] = np.array(feature_data_test['class'])
-    feature_data_test['res5c'] = np.array(feature_data_test['res5c'])
 
-    #save datas
-    pickle_save("/storage/mehmet/Zero-Shot/Features/train.data", feature_data_train)
-    pickle_save("/storage/mehmet/Zero-Shot/Features/valid.data", feature_data_valid)
-    pickle_save("/storage/mehmet/Zero-Shot/Features/test.data", feature_data_test)
+    h5file_train.create_dataset('image_name', data=np.array(feature_data_train['image_name']))
+    h5file_train.create_dataset('class', data=np.array(feature_data_train['class']))
+    h5file_train.create_dataset('res5c', data=np.array(feature_data_train['res5c']))
+
+    h5file_valid.create_dataset('image_name' ,data= np.array(feature_data_valid['image_name']))
+    h5file_valid.create_dataset('class' ,data= np.array(feature_data_valid['class']))
+    h5file_valid.create_dataset('res5c',data= np.array(feature_data_valid['res5c']))
+
+    h5file_test.create_dataset('image_name',data = np.array(feature_data_test['image_name']))
+    h5file_test.create_dataset('class', data = np.array(feature_data_test['class']))
+    h5file_test.create_dataset('res5c', data= np.array(feature_data_test['res5c']))
+
+    h5file_train.close()
+    h5file_valid.close()
+    h5file_test.close()
+
