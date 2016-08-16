@@ -27,9 +27,9 @@ if __name__ == '__main__':
 
     pb = Progbar(11788)
 
-    feature_data_train = {'image_name': [], 'class': [], 'res5c': []}
-    feature_data_valid = {'image_name': [], 'class': [], 'res5c': []}
-    feature_data_test = {'image_name': [], 'class': [], 'res5c': []}
+    feature_data_train = {'image_name': [], 'class': [], 'pool5': []}
+    feature_data_valid = {'image_name': [], 'class': [], 'pool5': []}
+    feature_data_test = {'image_name': [], 'class': [], 'pool5': []}
 
     #train-valid-test class list directories
     train_txt = "/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/trainclasses.txt"
@@ -69,17 +69,17 @@ if __name__ == '__main__':
         if class_name in list_train:
             feature_data_train['image_name'].append(image_name)
             feature_data_train['class'].append(class_name)
-            feature_data_train['res5c'].append(net.blobs['res5c'].data.copy())
+            feature_data_train['pool5'].append(net.blobs['pool5'].data.copy())
 
         elif class_name in list_valid:
             feature_data_valid['image_name'].append(image_name)
             feature_data_valid['class'].append(class_name)
-            feature_data_valid['res5c'].append(net.blobs['res5c'].data.copy())
+            feature_data_valid['pool5'].append(net.blobs['pool5'].data.copy())
 
         else:
             feature_data_test['image_name'].append(image_name)
             feature_data_test['class'].append(class_name)
-            feature_data_test['res5c'].append(net.blobs['res5c'].data.copy())
+            feature_data_test['pool5'].append(net.blobs['pool5'].data.copy())
 
 
     # save datas
@@ -90,15 +90,15 @@ if __name__ == '__main__':
 
     h5file_train.create_dataset('image_name', data=np.array(feature_data_train['image_name']))
     h5file_train.create_dataset('class', data=np.array(feature_data_train['class']))
-    h5file_train.create_dataset('res5c', data=np.array(feature_data_train['res5c']))
+    h5file_train.create_dataset('pool5', data=np.array(feature_data_train['pool5']))
 
     h5file_valid.create_dataset('image_name' ,data= np.array(feature_data_valid['image_name']))
     h5file_valid.create_dataset('class' ,data= np.array(feature_data_valid['class']))
-    h5file_valid.create_dataset('res5c',data= np.array(feature_data_valid['res5c']))
+    h5file_valid.create_dataset('pool5',data= np.array(feature_data_valid['pool5']))
 
     h5file_test.create_dataset('image_name',data = np.array(feature_data_test['image_name']))
     h5file_test.create_dataset('class', data = np.array(feature_data_test['class']))
-    h5file_test.create_dataset('res5c', data= np.array(feature_data_test['res5c']))
+    h5file_test.create_dataset('pool5', data= np.array(feature_data_test['pool5']))
 
     h5file_train.close()
     h5file_valid.close()
