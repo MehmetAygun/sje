@@ -57,7 +57,7 @@ if __name__ == '__main__':
     shuffle(random_index)
 
     #Parameters that should be validate
-    learning_rate = 0.01
+    learning_rate = 0.001
     max_epoch = 20
 
     #initialize W
