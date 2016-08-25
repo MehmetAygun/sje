@@ -2,10 +2,11 @@
 import h5py
 import numpy as np
 import read_attributes as ra
+import  math
 from keras.utils.generic_utils import Progbar
 
 
-def argmax(input_embedding,W,output_embeddings):
+def argmax(input_embedding, W, output_embeddings):
     """
             This function takes a input embedding and returns class index which have higher compatibility score
             input = nX1
@@ -16,9 +17,13 @@ def argmax(input_embedding,W,output_embeddings):
     return_index = 0
     max_score = -100000
 
-    W= np.matrix(W)
-    for i in range(0,output_embeddings.shape[0]):
-        score = np.dot(np.dot(input_embedding , W) , output_embeddings[i]) # 1X1 score
+    W = np.matrix(W)
+    projected_vector = np.dot(input_embedding, W)
+    # normalize
+    projected_vector /= math.sqrt(np.dot(projected_vector, projected_vector.transpose()))
+
+    for i in range(0, output_embeddings.shape[0]):
+        score = np.dot(projected_vector, output_embeddings[i])  # dot product similarity
         if score > max_score:
             max_score = score
             return_index = i
@@ -62,7 +67,7 @@ def get_accuracy (W,valid = True):
         if y == classes[j] -1 :
             correct = correct + 1
 
-    return (correct / number_of_examples) * 100
+    return (correct / float(number_of_examples)) * 100
 
 
 if __name__ == '__main__':
