@@ -64,7 +64,7 @@ def get_accuracy (W,valid = True):
     for j in range(0,number_of_examples):
         y = argmax(features[j],W,attributes)
         pb.add(1)
-        if y == classes[j] -1 :
+        if y == (classes[j]-1):
             correct = correct + 1
 
     return (correct / float(number_of_examples)) * 100
