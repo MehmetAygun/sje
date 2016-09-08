@@ -13,15 +13,16 @@ if __name__ == '__main__':
     #image_files
     SOURCE_DIR = "/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/images"
     #model_file
-    MODEL_FILE = '/storage/mehmet/Models/ResNet-152-deploy.prototxt'
+    MODEL_FILE = '/storage/mehmet/Models/ResNet-101-deploy.prototxt'
     #pretrained_model
-    PRETRAINED = '/storage/mehmet/Models/ResNet-152-model.caffemodel'
+    PRETRAINED = '/storage/mehmet/Models/ResNet-101-model.caffemodel'
 
+    RESIZED_DIR = "/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/resized/"
     net = caffe.Net(MODEL_FILE, PRETRAINED, caffe.TEST)
     transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
     transformer.set_transpose('data', (2, 0, 1))
     transformer.set_raw_scale('data', 255.0)
-
+    transformer.set_channel_swap('data', (2, 1, 0))  # swap channels from RGB to BGR
     # set gpu mode
     caffe.set_mode_gpu()
 
@@ -30,6 +31,7 @@ if __name__ == '__main__':
     feature_data_train = {'image_name': [], 'class': [], 'pool5': []}
     feature_data_valid = {'image_name': [], 'class': [], 'pool5': []}
     feature_data_test = {'image_name': [], 'class': [], 'pool5': []}
+
 
     #train-valid-test class list directories
     train_txt = "/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/trainclasses.txt"
@@ -52,21 +54,27 @@ if __name__ == '__main__':
         for line in f:
             list_test.append(line[:-1])
 
+    net.blobs['data'].reshape(1,  # batch size
+                              3,  # 3-channel (BGR) images
+                              224, 224)  # image size is 224x224
 
     for imagePath in fh.list_images(SOURCE_DIR):
         image_name = imagePath.split("/")[-1]
         class_name = imagePath.split("/")[-2]
-
-        #read image for caffe
-        img = caffe.io.load_image(imagePath)
         #process image
+
+
+        # read image for caffe
+        img = caffe.io.load_image(RESIZED_DIR+image_name)
+
         net.blobs['data'].data[...] = transformer.preprocess('data', img)
+
         out = net.forward()
 
         pb.add(1)
 
         #check is image inside in train/valid/test 
-        if class_name in list_train:
+        if class_name in list_train :
             feature_data_train['image_name'].append(image_name)
             feature_data_train['class'].append(class_name)
             feature_data_train['pool5'].append(net.blobs['pool5'].data.copy())

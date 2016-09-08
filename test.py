@@ -1,10 +1,8 @@
 #Author : Mehmet Aygun
 import h5py
 import numpy as np
-import read_attributes as ra
-import  math
 from keras.utils.generic_utils import Progbar
-
+from sklearn.preprocessing import normalize
 
 def argmax(input_embedding, W, output_embeddings):
     """
@@ -22,7 +20,7 @@ def argmax(input_embedding, W, output_embeddings):
     projected_vector = np.dot(input_embedding, W)
 
     # Normalize projected vector
-    projected_vector /= math.sqrt(np.dot(projected_vector, projected_vector.transpose()))
+    projected_vector = normalize(projected_vector.reshape(1, -1), axis=1, norm='l2')
 
     for i in range(0, output_embeddings.shape[0]):
         score = np.dot(projected_vector, output_embeddings[i])  # dot product similarity
@@ -31,7 +29,6 @@ def argmax(input_embedding, W, output_embeddings):
             return_index = i
 
     return return_index
-
 
 def get_accuracy (W,valid = True):
     """
@@ -47,11 +44,7 @@ def get_accuracy (W,valid = True):
     else:
         h5file = h5py.File("/storage/mehmet/Zero-Shot/Features/test.data", "r")
 
-
-    attributes = ra.read_attributes("/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
-    image_names = np.array(h5file['image_name'][:])
-
-
+    attributes = np.loadtxt("/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
 
     # change class index to int value
     classes = []
