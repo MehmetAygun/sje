@@ -40,11 +40,33 @@ def get_accuracy (W,valid = True):
 
     if valid:
         h5file = h5py.File("/storage/mehmet/Zero-Shot/Features/valid.data", "r")
+        # read attributes
+        attributes_temp = np.loadtxt(
+            "/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
+        # load train classes
+        valid_list = np.loadtxt("valid.txt", dtype=int)
+
+        attributes = np.zeros((valid_list.shape[0], attributes_temp.shape[1]))
+        # create attribute matrix that only have train classes
+        counter = 0
+        for i in valid_list:
+            attributes[counter] = attributes_temp[i-1]
+            counter += 1
 
     else:
         h5file = h5py.File("/storage/mehmet/Zero-Shot/Features/test.data", "r")
+        # read attributes
+        attributes_temp = np.loadtxt(
+            "/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
+        # load train classes
+        test_list = np.loadtxt("test.txt", dtype=int)
 
-    attributes = np.loadtxt("/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
+        attributes = np.zeros((test_list.shape[0], attributes_temp.shape[1]))
+        # create attribute matrix that only have train classes
+        counter = 0
+        for i in test_list:
+            attributes[counter] = attributes_temp[i-1]
+            counter += 1
 
     # change class index to int value
     classes = []
@@ -64,7 +86,11 @@ def get_accuracy (W,valid = True):
     for j in range(0,number_of_examples):
         y = argmax(features[j],W,attributes)
         pb.add(1)
-        if y == (classes[j]-1):
+        if valid:
+            class_index = valid_list[y]
+        else:
+            class_index = test_list[y]
+        if class_index == (classes[j]):
             correct = correct + 1
 
     return (correct / float(number_of_examples)) * 100
@@ -72,4 +98,4 @@ def get_accuracy (W,valid = True):
 if __name__ == '__main__':
     W = h5py.File("/storage/mehmet/Zero-Shot/Models/sje_w.data", "r")['W'][:]
 
-    print get_accuracy(W,valid=True)
+    print get_accuracy(W,valid=False)

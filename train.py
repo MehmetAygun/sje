@@ -73,12 +73,22 @@ def argmax(input_embedding,W,output_embeddings,correct_index,margin):
 if __name__ == '__main__':
 
     # Parameters that should be validate
-    learning_rate = 1e-5
-    margin = 1.0
-    max_epoch = 5
+    learning_rate = float(sys.argv[1])
+    margin = float(sys.argv[2])
+    max_epoch = 100
 
     #read attributes
-    attributes = np.loadtxt("/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
+    attributes_temp = np.loadtxt("/storage/mehmet/Zero-Shot/datasets/CUB_200_2011/CUB_200_2011/attributes/class_attribute_labels_continuous.txt")
+    #load train classes
+    train_list = np.loadtxt("train.txt",dtype=int)
+
+    attributes = np.zeros((train_list.shape[0],attributes_temp.shape[1]))
+    #create attribute matrix that only have train classes
+    counter = 0
+    for i in train_list:
+        attributes[counter]= attributes_temp[i-1]
+        counter +=1
+
     #attributes /= 100.0
     number_of_classes = attributes.shape[0]
     attributes_dimension = attributes.shape[1]
@@ -127,10 +137,13 @@ if __name__ == '__main__':
         shuffle(random_index)
         for j in random_index:
             pb.add(1)
-            y = argmax(train_features[j],W,attributes,train_class[j]-1,margin)
-            if (train_class[j]-1) != y and y!=-1: # if wrong predicton make update
-                W = W + np.dot(np.transpose(train_features[j]), (attributes[train_class[j]-1]-attributes[y])) * learning_rate
-            elif (train_class[j]-1) == y:
+            correct_class = np.nonzero(train_list == (train_class[j]))[0] # return  value 0-100
+            y = argmax(train_features[j],W,attributes,correct_class,margin)
+            if (correct_class) != y and y!=-1: # if wrong predicton make update
+                X = np.array(train_features[j]).transpose()
+                Y = np.array(attributes[correct_class]-attributes[y])
+                W = W + np.dot(X,Y) * learning_rate
+            elif (correct_class) == y:
                 number_of_true += 1
         print "Number of true " + str(number_of_true)
 
